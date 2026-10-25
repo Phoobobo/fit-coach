@@ -1,0 +1,12 @@
+node_modules/
+dist/
+/exercise/
+*.tsbuildinfo
+.DS_Store
+*.local
+
+# 示范视频不进 git。开发时放在仓库根目录 videos/，
+# 服务器上放在 /srv/fit/videos/。若误放到 public/videos/ 也不要提交。
+/videos/*
+!/videos/.gitkeep
+/public/videos/
