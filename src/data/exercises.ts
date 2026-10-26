@@ -51,7 +51,7 @@ export const exercises: Exercise[] = [
       '憋气，顶点一晃而过。',
     ],
     video: '/videos/crunch.mp4',
-    videoVersion: 1,
+    videoVersion: 2,
     poster: '',
   },
   {
@@ -73,7 +73,7 @@ export const exercises: Exercise[] = [
       '两侧次数和幅度差很多。',
     ],
     video: '/videos/side-crunch.mp4',
-    videoVersion: 1,
+    videoVersion: 2,
     poster: '',
   },
   {
@@ -95,7 +95,7 @@ export const exercises: Exercise[] = [
       '越转越快并憋气。脚若抬起后腰不稳，就放回地面。',
     ],
     video: '/videos/russian-twist.mp4',
-    videoVersion: 1,
+    videoVersion: 2,
     poster: '',
   },
 ]
