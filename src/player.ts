@@ -39,9 +39,12 @@ function mount(root: HTMLElement): void {
   }
 
   function showError(): void {
+    const code = video!.error?.code ?? 0
+    const message = video!.error?.message ?? ''
     video!.classList.remove('is-ready')
     status!.hidden = false
-    status!.textContent = '示范视频暂时无法加载'
+    status!.textContent = `示范视频暂时无法加载（错误 ${code}）`
+    console.warn(code, message)
   }
 
   let frame = 0

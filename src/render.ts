@@ -167,7 +167,6 @@ export function renderExerciseDocument(exercise: Exercise): string {
               playsinline
               webkit-playsinline
               preload="auto"
-              onloadeddata="this.classList.add('is-ready')"
             ></video>
           </div>
           <div class="controls">
