@@ -1,4 +1,5 @@
 import type { Exercise } from './data/exercises.ts'
+import type { Filing } from './filing.ts'
 
 export const SITE_ORIGIN = 'https://fit.phoobobo.top'
 
@@ -41,11 +42,14 @@ export function headerHtml(): string {
   </header>`
 }
 
-export function footerHtml(): string {
+export function footerHtml(filing: Filing): string {
   return `<footer class="site-footer">
     <div class="wrap footer-inner">
       <p class="footer-brand">型练 · 动作示范</p>
-      <a class="beian" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">京ICP备2026070128号</a>
+      <div class="filings">
+        <a class="beian" href="${escapeHtml(filing.icp.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(filing.icp.text)}</a>
+        <a class="beian beian-police" href="${escapeHtml(filing.police.url)}" target="_blank" rel="noopener noreferrer"><img src="/police-filing.png" alt="" width="18" height="20" />${escapeHtml(filing.police.text)}</a>
+      </div>
     </div>
   </footer>`
 }
@@ -111,7 +115,7 @@ function clip(value: string, max = 140): string {
   return `${value.slice(0, max - 1)}…`
 }
 
-export function renderExerciseDocument(exercise: Exercise): string {
+export function renderExerciseDocument(exercise: Exercise, filing: Filing): string {
   const title = `${exercise.name} — 动作示范 · 型练`
   const description = clip(
     `${exercise.name}动作示范，主要练${exercise.muscles}。难度${exercise.difficulty}，${exercise.prescription}。`,
@@ -203,7 +207,7 @@ export function renderExerciseDocument(exercise: Exercise): string {
         </div>
       </article>
     </main>
-    ${footerHtml()}
+    ${footerHtml(filing)}
     <script type="module" src="/src/player.ts"></script>
   </body>
 </html>
