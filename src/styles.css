@@ -669,9 +669,28 @@ main {
   padding: 22px 0 28px;
 }
 
+.filings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
 .beian {
   color: var(--accent);
   text-underline-offset: 3px;
+}
+
+.beian-police {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.beian-police img {
+  width: 18px;
+  height: 20px;
+  display: block;
 }
 
 .beian:hover {

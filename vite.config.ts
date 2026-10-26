@@ -1,8 +1,9 @@
-import { createReadStream, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { createReadStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { join, normalize, resolve, sep } from 'node:path'
 import { defineConfig, type Connect, type Plugin } from 'vite'
 import { exercises } from './src/data/exercises.ts'
+import { isFiling, type Filing } from './src/filing.ts'
 import {
   escapeHtml,
   footerHtml,
@@ -15,7 +16,41 @@ import {
   siteDescription,
 } from './src/render.ts'
 
-function writeExercisePages(): Record<string, string> {
+const FILING_URL = 'https://account.phoobobo.top/api/filing.json'
+
+function readFallbackFiling(): Filing {
+  const file = resolve(import.meta.dirname, 'src/data/filing.json')
+  const parsed: unknown = JSON.parse(readFileSync(file, 'utf8'))
+  if (!isFiling(parsed)) {
+    throw new Error('src/data/filing.json 格式不正确')
+  }
+  return parsed
+}
+
+async function loadFiling(): Promise<Filing> {
+  const fallback = readFallbackFiling()
+  try {
+    const response = await fetch(FILING_URL, {
+      signal: AbortSignal.timeout(4000),
+      headers: { accept: 'application/json' },
+    })
+    if (!response.ok) {
+      console.warn(`备案接口返回 ${response.status}，使用 src/data/filing.json`)
+      return fallback
+    }
+    const parsed: unknown = await response.json()
+    if (!isFiling(parsed)) {
+      console.warn('备案接口内容无法识别，使用 src/data/filing.json')
+      return fallback
+    }
+    return parsed
+  } catch {
+    console.warn('备案接口不可达，使用 src/data/filing.json')
+    return fallback
+  }
+}
+
+function writeExercisePages(filing: Filing): Record<string, string> {
   const root = resolve(import.meta.dirname, 'exercise')
   rmSync(root, { recursive: true, force: true })
   const input: Record<string, string> = {}
@@ -23,7 +58,7 @@ function writeExercisePages(): Record<string, string> {
     const dir = join(root, exercise.id)
     mkdirSync(dir, { recursive: true })
     const file = join(dir, 'index.html')
-    writeFileSync(file, renderExerciseDocument(exercise))
+    writeFileSync(file, renderExerciseDocument(exercise, filing))
     input[`exercise-${exercise.id}`] = file
   }
   return input
@@ -108,7 +143,7 @@ function videosMiddleware(): Connect.NextHandleFunction {
   }
 }
 
-function pagesPlugin(): Plugin {
+function pagesPlugin(filing: Filing): Plugin {
   const description = escapeHtml(siteDescription(exercises))
   const featured = exercises[0]
   if (!featured) throw new Error('至少需要一个动作')
@@ -122,7 +157,7 @@ function pagesPlugin(): Plugin {
       return html
         .replaceAll('__SITE_DESCRIPTION__', description)
         .replaceAll('<!-- LAYOUT_HEADER -->', headerHtml())
-        .replaceAll('<!-- LAYOUT_FOOTER -->', footerHtml())
+        .replaceAll('<!-- LAYOUT_FOOTER -->', footerHtml(filing))
         .replaceAll('<!-- FEATURED_CTA -->', renderFeaturedCta(featured))
         .replaceAll('<!-- FEATURED_PANEL -->', renderFeaturedPanel(featured))
         .replaceAll('<!-- EXERCISE_TOTAL -->', String(exercises.length))
@@ -149,17 +184,19 @@ function pagesPlugin(): Plugin {
   }
 }
 
-const exerciseInputs = writeExercisePages()
-
-export default defineConfig({
-  appType: 'mpa',
-  plugins: [pagesPlugin()],
-  build: {
-    rolldownOptions: {
-      input: {
-        main: resolve(import.meta.dirname, 'index.html'),
-        ...exerciseInputs,
+export default defineConfig(async () => {
+  const filing = await loadFiling()
+  const exerciseInputs = writeExercisePages(filing)
+  return {
+    appType: 'mpa',
+    plugins: [pagesPlugin(filing)],
+    build: {
+      rolldownOptions: {
+        input: {
+          main: resolve(import.meta.dirname, 'index.html'),
+          ...exerciseInputs,
+        },
       },
     },
-  },
+  }
 })

@@ -1,0 +1,12 @@
+{
+  "icp": {
+    "text": "京ICP备2026070128号",
+    "url": "https://beian.miit.gov.cn/"
+  },
+  "police": {
+    "text": "京公网安备11011402057645号",
+    "code": "11011402057645",
+    "url": "https://beian.mps.gov.cn/#/query/webSearch?code=11011402057645",
+    "icon": "https://account.phoobobo.top/filing/police.png"
+  }
+}
